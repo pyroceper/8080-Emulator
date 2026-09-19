@@ -13,6 +13,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_executable(space_invaders
     src/main.cpp
+
+    src/cpu.cpp
 )
 
 
@@ -20,3 +22,40 @@ target_include_directories(space_invaders
     PRIVATE
     ${PROJECT_SOURCE_DIR}/include
 )
+
+# -----
+# Tests
+# -----
+
+include(CTest)
+
+if(BUILD_TESTING)
+    include(FetchContent)
+
+
+    FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG v1.18.0
+    )
+
+    FetchContent_MakeAvailable(googletest)
+
+    add_executable(i8080_tests
+        tests/cpu_test.cpp
+        src/cpu.cpp
+    )
+
+    target_include_directories(i8080_tests
+        PRIVATE
+        ${PROJECT_SOURCE_DIR}/include
+    )
+
+    target_link_libraries(i8080_tests
+        PRIVATE
+            GTest::gtest_main
+    )
+
+    include(GoogleTest)
+    gtest_discover_tests(i8080_tests)
+endif()
