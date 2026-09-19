@@ -10,15 +10,32 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-
+# -----
+# emulator
+# -----
 add_executable(space_invaders
-    src/main.cpp
+    src/emu/main.cpp
 
-    src/cpu.cpp
+    src/i8080/cpu.cpp
 )
 
 
 target_include_directories(space_invaders
+    PRIVATE
+    ${PROJECT_SOURCE_DIR}/include
+)
+
+# -----
+# 8080 disassembler
+# ----
+
+add_executable(i8080_disasm
+    src/disasm/main.cpp 
+
+    src/i8080/cpu.cpp
+)
+
+target_include_directories(i8080_disasm
     PRIVATE
     ${PROJECT_SOURCE_DIR}/include
 )
@@ -43,7 +60,7 @@ if(BUILD_TESTING)
 
     add_executable(i8080_tests
         tests/cpu_test.cpp
-        src/cpu.cpp
+        src/i8080/cpu.cpp
     )
 
     target_include_directories(i8080_tests

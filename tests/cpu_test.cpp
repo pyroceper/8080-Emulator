@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "cpu.h"
+#include "i8080/cpu.h"
 
 TEST(CPUTest, InitialStateIsZero)
 {
