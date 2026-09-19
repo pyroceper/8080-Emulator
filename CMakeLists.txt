@@ -5,24 +5,40 @@ project(space_invaders
     LANGUAGES CXX
 )
 
-
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+# -----
+# intel 8080
+# -----
+add_library(i8080
+    src/i8080/cpu.cpp
+    src/i8080/bus.cpp
+
+)
+
+target_include_directories(i8080
+    PUBLIC
+    ${PROJECT_SOURCE_DIR}/include
+)
 
 # -----
 # emulator
 # -----
 add_executable(space_invaders
     src/emu/main.cpp
-
-    src/i8080/cpu.cpp
 )
 
 
 target_include_directories(space_invaders
-    PRIVATE
+    PUBLIC
     ${PROJECT_SOURCE_DIR}/include
+)
+
+target_link_libraries(space_invaders
+    PRIVATE
+        i8080
 )
 
 # -----
@@ -31,13 +47,16 @@ target_include_directories(space_invaders
 
 add_executable(i8080_disasm
     src/disasm/main.cpp 
-
-    src/i8080/cpu.cpp
 )
 
 target_include_directories(i8080_disasm
-    PRIVATE
+    PUBLIC
     ${PROJECT_SOURCE_DIR}/include
+)
+
+target_link_libraries(i8080_disasm
+    PRIVATE
+        i8080
 )
 
 # -----
@@ -60,7 +79,6 @@ if(BUILD_TESTING)
 
     add_executable(i8080_tests
         tests/cpu_test.cpp
-        src/i8080/cpu.cpp
     )
 
     target_include_directories(i8080_tests
@@ -70,6 +88,7 @@ if(BUILD_TESTING)
 
     target_link_libraries(i8080_tests
         PRIVATE
+            i8080
             GTest::gtest_main
     )
 

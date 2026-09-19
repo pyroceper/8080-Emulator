@@ -2,23 +2,18 @@
 
 namespace i8080 {
 
-CPU::CPU() 
+CPU::CPU(Bus& bus) : bus_(bus) 
 {
     reset();
 }
 
 void CPU::reset()
 {
-    a_ = 0;
-    b_ = 0;
-    c_ = 0;
-    d_ = 0;
-    e_ = 0;
-    h_ = 0;
-    l_ = 0;
+    regs_.fill(0);
 
     sp_ = 0;
     pc_ = 0;
+
 }
 
 

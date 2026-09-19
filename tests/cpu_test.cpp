@@ -4,7 +4,8 @@
 
 TEST(CPUTest, InitialStateIsZero)
 {
-    i8080::CPU cpu;
+    i8080::Bus bus;
+    i8080::CPU cpu(bus);
 
     EXPECT_EQ(cpu.a(), 0);
     EXPECT_EQ(cpu.b(), 0);
