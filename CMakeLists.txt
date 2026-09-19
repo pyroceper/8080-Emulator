@@ -79,6 +79,7 @@ if(BUILD_TESTING)
 
     add_executable(i8080_tests
         tests/cpu_test.cpp
+        tests/bus_test.cpp
     )
 
     target_include_directories(i8080_tests
