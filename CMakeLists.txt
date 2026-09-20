@@ -9,6 +9,18 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# ----
+# dependencies
+# ----
+include(FetchContent)
+
+FetchContent_Declare(
+    fmt
+    GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+    GIT_TAG 12.2.0
+)
+FetchContent_MakeAvailable(fmt)
+
 # -----
 # intel 8080
 # -----
@@ -22,6 +34,11 @@ add_library(i8080
 target_include_directories(i8080
     PUBLIC
     ${PROJECT_SOURCE_DIR}/include
+)
+
+target_link_libraries(i8080
+    PUBLIC
+        fmt::fmt
 )
 
 # -----

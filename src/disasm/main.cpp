@@ -1,5 +1,4 @@
-#include <iostream>
-#include <cstdio>
+#include <fmt/format.h>
 #include <fstream>
 #include <vector>
 
@@ -8,13 +7,13 @@
 int main(int argc, char *argv[]) 
 {
     if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <rom.bin> [start address in hex]\n";
+        fmt::print(stderr, "Usage: {} <rom.bin> [start address in hex]\n", argv[0]);
         return 1;
     }
 
     std::ifstream rom_file(argv[1], std::ios::binary);
     if (!rom_file) {
-        std::cerr << "Error: Could not open " << argv[1] << std::endl;
+        fmt::print(stderr, "Error: Could not open {}\n", argv[1]);
         return 1;
     }
 
@@ -22,7 +21,7 @@ int main(int argc, char *argv[])
     std::vector<uint8_t> mem( (std::istreambuf_iterator<char>(rom_file)) , std::istreambuf_iterator<char>());
 
     if (mem.empty()) {
-        std::cerr << "Error: ROM file is empty!\n";
+        fmt::print(stderr, "Error: ROM file is empty!\n");
         return 1;
     }
 
@@ -45,14 +44,16 @@ int main(int argc, char *argv[])
     while (pc < end) {
         i8080::DecodedInstr instr = i8080::disassemble_at(static_cast<uint16_t>(pc), mem_read);
 
-        std::printf("%04X ", pc);
-        for (int i = 0; i < instr.length; i++) {
-            std::printf("%02X ", mem_read(static_cast<uint16_t>(pc + i)));
+        fmt::print("{:04X}  ", pc);
+        for (int i = 0; i < 3; i++) {
+            if (i < instr.length) {
+                fmt::print("{:02X} ", mem_read(static_cast<uint16_t>(pc + i)));
+            }
+            else {
+                fmt::print("   "); // padding for alignment
+            }
         }
-        for (int i = instr.length; i < 3; i++) {
-            std::printf("   "); // padding for alignment
-        }
-        std::printf(" %s\n", instr.text.c_str());
+        fmt::print(" {}\n", instr.text);
 
         pc += instr.length;
     }
