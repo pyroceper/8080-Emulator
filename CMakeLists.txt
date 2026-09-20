@@ -15,6 +15,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_library(i8080
     src/i8080/cpu.cpp
     src/i8080/bus.cpp
+    src/i8080/disasm.cpp
 
 )
 

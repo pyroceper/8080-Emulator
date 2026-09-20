@@ -38,6 +38,8 @@
 *.exe
 *.out
 *.app
+*.com
+*.COM
 
 # Build directories
 build/
@@ -67,3 +69,6 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# test rom files
+tests/roms/*
