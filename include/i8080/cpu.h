@@ -26,6 +26,11 @@ class CPU
         uint16_t sp() const { return sp_; }
         uint16_t pc() const { return pc_; }
 
+        bool halted() const { return halted_; }
+
+        uint16_t get_rp(uint8_t rp) const;
+        void set_rp(uint8_t rp, uint16_t value);
+
         uint8_t fetch8();
         uint16_t fetch16();
 
@@ -41,6 +46,8 @@ class CPU
 
         // bus
         Bus& bus_;
+
+        bool halted_; // halt cpu
 
 };
 

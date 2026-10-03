@@ -46,3 +46,41 @@ TEST(CPUTest, Fetch16Bytes)
     EXPECT_EQ(cpu.pc(), 0x0002);
     EXPECT_EQ(val, 0x6942);
 }
+
+TEST(CPUTest, SetRegPair)
+{
+    i8080::Bus bus;
+    i8080::CPU cpu(bus);
+
+    cpu.set_rp(i8080::RegPair::BC, 0x1234);
+    cpu.set_rp(i8080::RegPair::DE, 0x5678);
+    cpu.set_rp(i8080::RegPair::HL, 0x1122);
+    cpu.set_rp(i8080::RegPair::SP, 0x3344);
+
+    EXPECT_EQ(cpu.b(), 0x12);
+    EXPECT_EQ(cpu.c(), 0x34);
+
+    EXPECT_EQ(cpu.d(), 0x56);
+    EXPECT_EQ(cpu.e(), 0x78);
+
+    EXPECT_EQ(cpu.h(), 0x11);
+    EXPECT_EQ(cpu.l(), 0x22);
+
+    EXPECT_EQ(cpu.sp(), 0x3344);
+}
+
+TEST(CPUTest, GetRegPair)
+{
+    i8080::Bus bus;
+    i8080::CPU cpu(bus);
+    
+    cpu.set_rp(i8080::RegPair::BC, 0x1234);
+    cpu.set_rp(i8080::RegPair::DE, 0x5678);
+    cpu.set_rp(i8080::RegPair::HL, 0x1122);
+    cpu.set_rp(i8080::RegPair::SP, 0x3344);
+
+    EXPECT_EQ(cpu.get_rp(i8080::RegPair::BC), 0x1234);
+    EXPECT_EQ(cpu.get_rp(i8080::RegPair::DE), 0x5678);
+    EXPECT_EQ(cpu.get_rp(i8080::RegPair::HL), 0x1122);
+    EXPECT_EQ(cpu.get_rp(i8080::RegPair::SP), 0x3344);
+}
