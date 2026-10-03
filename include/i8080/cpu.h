@@ -2,7 +2,9 @@
 #define I8080_CPU_H
 
 #include <array>
+#include <bit> // std::popcount
 #include "reg.h"
+#include "flags.h"
 #include "bus.h"
 
 namespace i8080 {
@@ -34,6 +36,15 @@ class CPU
         uint16_t get_rp(uint8_t rp) const;
         void set_rp(uint8_t rp, uint16_t value);
 
+        bool zero() const { return flags_.z; }
+        bool sign() const { return flags_.s; }
+        bool parity() const { return flags_.p; }
+        
+        void set_zsp(uint8_t result);
+
+        void exec_inr(uint8_t reg);
+        void exec_dcr(uint8_t reg);
+
         uint8_t fetch8();
         uint16_t fetch16();
 
@@ -46,6 +57,9 @@ class CPU
         // 16bit registers
         uint16_t sp_;
         uint16_t pc_;
+
+        // Flags
+        Flags flags_;
 
         // bus
         Bus& bus_;

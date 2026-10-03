@@ -67,6 +67,37 @@ void CPU::set_rp(uint8_t rp, uint16_t value)
     }
 }
 
+void CPU::set_zsp(uint8_t result)
+{
+    flags_.z = (result == 0); // zero
+    flags_.s = (result & 0x80) != 0; // sign
+    flags_.p = (std::popcount(result) % 2) == 0; // parity
+}
+
+void CPU::exec_inr(uint8_t reg)
+{
+    uint8_t value = get_reg(reg);
+    uint8_t result = value  + 1;
+
+    // aux carry
+    flags_.ac = (value & 0x0F) == 0x0F; // 0b1111 -> then carry into high nibble 
+    set_zsp(result);
+
+    set_reg(reg, result);
+}
+
+void CPU::exec_dcr(uint8_t reg)
+{
+    uint8_t value = get_reg(reg);
+    uint8_t result = value - 1;
+
+    // aux carry
+    flags_.ac = (value & 0x0F) != 0x00; // 0b0000 -> then borrow from high nibble, set when no borrow
+    set_zsp(result);
+
+    set_reg(reg, result);
+}
+
 uint8_t CPU::fetch8()
 {
     return bus_.read(pc_++);
@@ -159,7 +190,27 @@ void CPU::step()
         case 0x1B: set_rp(RegPair::DE, get_rp(RegPair::DE) - 1); break;
         case 0x2B: set_rp(RegPair::HL, get_rp(RegPair::HL) - 1); break;
         case 0x3B: set_rp(RegPair::SP, get_rp(RegPair::SP) - 1); break;
+
+        // INR - increment register or memory
+        case 0x04: exec_inr(Reg::B); break;
+        case 0x14: exec_inr(Reg::D); break;
+        case 0x24: exec_inr(Reg::H); break;
+        case 0x34: exec_inr(Reg::M); break;
+        case 0x0C: exec_inr(Reg::C); break;
+        case 0x1C: exec_inr(Reg::E); break;
+        case 0x2C: exec_inr(Reg::L); break;
+        case 0x3C: exec_inr(Reg::A); break;
         
+        // DCR - decrement register or memory
+        case 0x05: exec_dcr(Reg::B); break;
+        case 0x15: exec_dcr(Reg::D); break;
+        case 0x25: exec_dcr(Reg::H); break;
+        case 0x35: exec_dcr(Reg::M); break;
+        case 0x0D: exec_dcr(Reg::C); break;
+        case 0x1D: exec_dcr(Reg::E); break;
+        case 0x2D: exec_dcr(Reg::L); break;
+        case 0x3D: exec_dcr(Reg::A); break;
+
         default: {
             // MOV opcodes
             if (opcode >= 0x40 && opcode <= 0x7F) { // 0x76, HLT already handled
