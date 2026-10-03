@@ -26,6 +26,8 @@ class CPU
         uint16_t sp() const { return sp_; }
         uint16_t pc() const { return pc_; }
 
+        void set_reg(uint8_t reg, uint8_t value);
+
         bool halted() const { return halted_; }
 
         uint16_t get_rp(uint8_t rp) const;

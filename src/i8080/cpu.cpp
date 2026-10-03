@@ -18,6 +18,15 @@ void CPU::reset()
     halted_ = false;
 }
 
+void CPU::set_reg(uint8_t reg, uint8_t value)
+{
+    if (reg == Reg::M) {
+        bus_.write(get_rp(RegPair::HL), value);
+    } else {
+        regs_[reg] = value;
+    }
+}
+
 uint16_t CPU::get_rp(uint8_t rp) const 
 {
     switch (rp) {
@@ -81,6 +90,38 @@ void CPU::step()
         case 0x11: set_rp(RegPair::DE, fetch16()); break; // LXI D,d16
         case 0x21: set_rp(RegPair::HL, fetch16()); break; // LXI H,d16
         case 0x31: set_rp(RegPair::SP, fetch16()); break; // LXI SP,d16
+
+        // STAX - store accumulator, memory[BC] = A; memory[DE] = A;
+        case 0x02: bus_.write(get_rp(RegPair::BC), a()); break; // STAX B
+        case 0x12: bus_.write(get_rp(RegPair::DE), a()); break; // STAX D
+        // LDAX - load A from memory address in register pair BC or DE
+        case 0x0A: set_reg(Reg::A, bus_.read(get_rp(RegPair::BC))); break; // LDAX B
+        case 0x1A: set_reg(Reg::A, bus_.read(get_rp(RegPair::DE))); break; // LDAX D
+
+        // SHLD - store H and L direct
+        case 0x22: { // SHLD a16
+            const uint16_t addr = fetch16();
+            bus_.write(addr, l());
+            bus_.write(addr + 1, h());
+        } break;
+        // LHLD - load H and L from address
+        case 0x2A: { // LHLD a16
+            const uint16_t addr = fetch16();
+
+            set_reg(Reg::L, bus_.read(addr));
+            set_reg(Reg::H, bus_.read(addr + 1));
+        } break;
+
+        // STA - store A in memory
+        case 0x32: { // STA a16
+            const uint16_t addr = fetch16();
+            bus_.write(addr, a());
+        } break;
+        // LDA - load A from memory
+        case 0x3A: { // LDA a16
+            const uint16_t addr = fetch16();
+            set_reg(Reg::A, bus_.read(addr));
+        } break;
 
         default: {
             fmt::print(stderr, "Unimplemented opcode {:02X} at {:04X}\n", opcode, static_cast<uint16_t>(pc_ - 1));
