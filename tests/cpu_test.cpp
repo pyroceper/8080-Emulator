@@ -188,3 +188,58 @@ TEST(CPUTest, LoadStoreOPs)
     cpu.step(); // execute
     EXPECT_EQ(cpu.a(), 0x12);
 }
+
+TEST(CPUTest, MVIOpcodes)
+{
+    i8080::Bus bus;
+    i8080::CPU cpu(bus);
+
+    uint8_t value = 0x42;
+    bus.write(0x0000, 0x06); // MVI B,d8 opcode
+    bus.write(0x0001, value); // d8
+    cpu.step(); // execute
+    
+    bus.write(0x0002, 0x16); // MVI D,d8 opcode
+    bus.write(0x0003, value); // d8
+    cpu.step(); // execute
+
+    bus.write(0x0004, 0x26); // MVI H,d8 opcode
+    bus.write(0x0005, value); // d8
+    cpu.step(); // execute
+
+    value = 0x69;
+
+    bus.write(0x0006, 0x0E); // MVI C,d8 opcode
+    bus.write(0x0007, value); // d8
+    cpu.step(); // execute
+    
+    bus.write(0x0008, 0x1E); // MVI E,d8 opcode
+    bus.write(0x0009, value); // d8
+    cpu.step(); // execute
+
+    bus.write(0x000A, 0x2E); // MVI L,d8 opcode
+    bus.write(0x000B, value); // d8
+    cpu.step(); // execute
+
+    bus.write(0x000C, 0x3E); // MVI A,d8 opcode
+    bus.write(0x000D, value); // d8
+    cpu.step(); // execute
+
+    EXPECT_EQ(cpu.c(), value);
+    EXPECT_EQ(cpu.e(), value);
+    EXPECT_EQ(cpu.l(), value);
+    EXPECT_EQ(cpu.a(), value);
+    value = 0x42;
+    EXPECT_EQ(cpu.b(), value);
+    EXPECT_EQ(cpu.d(), value);
+    EXPECT_EQ(cpu.h(), value);    
+
+    cpu.set_rp(i8080::RegPair::HL, 0x0256); // HL = 0x0256
+
+    bus.write(0x000E, 0x36); // MVI M,d8 opcode
+    bus.write(0x000F, value); // d8
+    cpu.step(); // execute
+
+    uint16_t addr = cpu.get_rp(i8080::RegPair::HL);
+    EXPECT_EQ(bus.read(addr), value);
+}

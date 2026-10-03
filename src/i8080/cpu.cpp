@@ -123,6 +123,16 @@ void CPU::step()
             set_reg(Reg::A, bus_.read(addr));
         } break;
 
+        // MVI - move immediate into register or memory
+        case 0x06: set_reg(Reg::B, fetch8()); break; // MVI B,d8
+        case 0x16: set_reg(Reg::D, fetch8()); break; // MVI C,d8
+        case 0x26: set_reg(Reg::H, fetch8()); break; // MVI H,d8
+        case 0x36: set_reg(Reg::M, fetch8()); break; // MVI M,d8 ; M -> (HL)
+        case 0x0E: set_reg(Reg::C, fetch8()); break; // MVI C,d8
+        case 0x1E: set_reg(Reg::E, fetch8()); break; // MVI E,d8
+        case 0x2E: set_reg(Reg::L, fetch8()); break; // MVI L,d8
+        case 0x3E: set_reg(Reg::A, fetch8()); break; // MVI A,d8
+
         default: {
             fmt::print(stderr, "Unimplemented opcode {:02X} at {:04X}\n", opcode, static_cast<uint16_t>(pc_ - 1));
         }
