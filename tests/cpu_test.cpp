@@ -243,3 +243,42 @@ TEST(CPUTest, MVIOpcodes)
     uint16_t addr = cpu.get_rp(i8080::RegPair::HL);
     EXPECT_EQ(bus.read(addr), value);
 }
+
+TEST(CPUTest, MOVOpcodes)
+{
+    i8080::Bus bus;
+    i8080::CPU cpu(bus);
+    bus.write(0x0000, 0x00); // NOP
+    cpu.step(); // execute
+
+    uint8_t val = 0x00;
+    uint16_t addr = 0x0001;
+    for (uint8_t dst = 0; dst < 8; dst++) {
+        for (uint8_t src = 0; src < 8; src++) {
+            // 0x76 is HLT
+            // there's no MOV M, M
+            if (dst == i8080::Reg::M && src == i8080::Reg::M) 
+                continue;
+
+            // MOV opcode -> 01_DDD_SSS
+            const uint8_t opcode = 0x40 | (dst << 3) | src;
+
+            cpu.set_reg(src, val); // set src to specific val
+            bus.write(addr, opcode); // MOV dst,src opcode
+            addr++;
+
+            cpu.step(); // execute
+            EXPECT_EQ(cpu.get_reg(dst), val);
+            val++;
+        }
+    }
+
+   // XCHG - DE and HL
+   cpu.set_rp(i8080::RegPair::DE, 0x1234);
+   cpu.set_rp(i8080::RegPair::HL, 0x5678);
+
+   bus.write(addr, 0xEB); // XCHG opcode
+   cpu.step(); // execute
+   EXPECT_EQ(cpu.get_rp(i8080::RegPair::DE), 0x5678);
+   EXPECT_EQ(cpu.get_rp(i8080::RegPair::HL), 0x1234);
+}

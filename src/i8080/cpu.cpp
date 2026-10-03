@@ -27,6 +27,14 @@ void CPU::set_reg(uint8_t reg, uint8_t value)
     }
 }
 
+uint8_t CPU::get_reg(uint8_t reg) const
+{
+    if (reg == Reg::M) {
+        return bus_.read(get_rp(RegPair::HL));
+    }
+    return regs_[reg];
+}
+
 uint16_t CPU::get_rp(uint8_t rp) const 
 {
     switch (rp) {
@@ -133,8 +141,25 @@ void CPU::step()
         case 0x2E: set_reg(Reg::L, fetch8()); break; // MVI L,d8
         case 0x3E: set_reg(Reg::A, fetch8()); break; // MVI A,d8
 
+        // XCHG - exchange DE and HL
+        case 0xEB: {
+            uint16_t temp = get_rp(RegPair::DE);
+            set_rp(RegPair::DE, get_rp(RegPair::HL));
+            set_rp(RegPair::HL, temp);
+        } break;
+
         default: {
-            fmt::print(stderr, "Unimplemented opcode {:02X} at {:04X}\n", opcode, static_cast<uint16_t>(pc_ - 1));
+            // MOV opcodes
+            if (opcode >= 0x40 && opcode <= 0x7F) { // 0x76, HLT already handled
+                // 0x40 -> 0b001_000_000
+                //   Binary op   DST SRC ; DST = B, SRC = B
+                // 0x4A -> 0b001_001_010 ; DST = C, SRC = D
+                uint8_t dst = (opcode >> 3) & 0x07; // maintain same register for 6 opcodes, 0x_0 to 0x_6
+                uint8_t src = opcode & 0x07; // 0 to 6 registers
+                set_reg(dst, get_reg(src));
+            } else { 
+                fmt::print(stderr, "Unimplemented opcode {:02X} at {:04X}\n", opcode, static_cast<uint16_t>(pc_ - 1));
+            }
         }
     }
 }

@@ -27,6 +27,7 @@ class CPU
         uint16_t pc() const { return pc_; }
 
         void set_reg(uint8_t reg, uint8_t value);
+        uint8_t get_reg(uint8_t reg) const;
 
         bool halted() const { return halted_; }
 
