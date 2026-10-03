@@ -273,12 +273,68 @@ TEST(CPUTest, MOVOpcodes)
         }
     }
 
-   // XCHG - DE and HL
-   cpu.set_rp(i8080::RegPair::DE, 0x1234);
-   cpu.set_rp(i8080::RegPair::HL, 0x5678);
+    // XCHG - DE and HL
+    cpu.set_rp(i8080::RegPair::DE, 0x1234);
+    cpu.set_rp(i8080::RegPair::HL, 0x5678);
 
-   bus.write(addr, 0xEB); // XCHG opcode
-   cpu.step(); // execute
-   EXPECT_EQ(cpu.get_rp(i8080::RegPair::DE), 0x5678);
-   EXPECT_EQ(cpu.get_rp(i8080::RegPair::HL), 0x1234);
+    bus.write(addr, 0xEB); // XCHG opcode
+    cpu.step(); // execute
+    EXPECT_EQ(cpu.get_rp(i8080::RegPair::DE), 0x5678);
+    EXPECT_EQ(cpu.get_rp(i8080::RegPair::HL), 0x1234);
+}
+
+TEST(CPUTest, INXAndDCXOpcodes)
+{
+    i8080::Bus bus;
+    i8080::CPU cpu(bus); 
+
+    bus.write(0x0000, 0x03); // INX B
+    cpu.set_rp(i8080::RegPair::BC, 0x1233);
+    cpu.step(); // execute
+
+    bus.write(0x0001, 0x13); // INX D
+    cpu.set_rp(i8080::RegPair::DE, 0x5677);
+    cpu.step(); // execute
+
+    bus.write(0x0002, 0x23); // INX H
+    cpu.set_rp(i8080::RegPair::HL, 0x1121);
+    cpu.step(); // execute
+
+    bus.write(0x0003, 0x33); // INX SP
+    cpu.set_rp(i8080::RegPair::SP, 0x3343);
+    cpu.step(); // execute
+
+    EXPECT_EQ(cpu.get_rp(i8080::RegPair::BC), 0x1234);
+    EXPECT_EQ(cpu.get_rp(i8080::RegPair::DE), 0x5678);
+    EXPECT_EQ(cpu.get_rp(i8080::RegPair::HL), 0x1122);
+    EXPECT_EQ(cpu.get_rp(i8080::RegPair::SP), 0x3344);    
+
+    bus.write(0x0004, 0x0B); // DCX B
+    cpu.step(); // execute
+
+    bus.write(0x0005, 0x1B); // DCX D
+    cpu.step(); // execute
+
+    bus.write(0x0006, 0x2B); // DCX H
+    cpu.step(); // execute
+
+    bus.write(0x0007, 0x3B); // DCX SP
+    cpu.step(); // execute
+
+    EXPECT_EQ(cpu.get_rp(i8080::RegPair::BC), 0x1233);
+    EXPECT_EQ(cpu.get_rp(i8080::RegPair::DE), 0x5677);
+    EXPECT_EQ(cpu.get_rp(i8080::RegPair::HL), 0x1121);
+    EXPECT_EQ(cpu.get_rp(i8080::RegPair::SP), 0x3343); 
+    
+    // overflow and underflow tests
+    cpu.set_rp(i8080::RegPair::DE, 0xFFFF);
+    bus.write(0x0008, 0x13); // INX D
+    cpu.step(); // execute
+
+    cpu.set_rp(i8080::RegPair::HL, 0x0000);
+    bus.write(0x0009, 0x2B); // DCX H
+    cpu.step(); // execute
+
+    EXPECT_EQ(cpu.get_rp(i8080::RegPair::DE), 0x0000);
+    EXPECT_EQ(cpu.get_rp(i8080::RegPair::HL), 0xFFFF);
 }

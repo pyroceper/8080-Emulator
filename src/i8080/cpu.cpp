@@ -148,6 +148,18 @@ void CPU::step()
             set_rp(RegPair::HL, temp);
         } break;
 
+        // INX - increment register pair
+        case 0x03: set_rp(RegPair::BC, get_rp(RegPair::BC) + 1); break;
+        case 0x13: set_rp(RegPair::DE, get_rp(RegPair::DE) + 1); break;
+        case 0x23: set_rp(RegPair::HL, get_rp(RegPair::HL) + 1); break;
+        case 0x33: set_rp(RegPair::SP, get_rp(RegPair::SP) + 1); break;
+
+        // DCX - decrement register pair
+        case 0x0B: set_rp(RegPair::BC, get_rp(RegPair::BC) - 1); break;
+        case 0x1B: set_rp(RegPair::DE, get_rp(RegPair::DE) - 1); break;
+        case 0x2B: set_rp(RegPair::HL, get_rp(RegPair::HL) - 1); break;
+        case 0x3B: set_rp(RegPair::SP, get_rp(RegPair::SP) - 1); break;
+        
         default: {
             // MOV opcodes
             if (opcode >= 0x40 && opcode <= 0x7F) { // 0x76, HLT already handled
