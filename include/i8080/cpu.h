@@ -25,6 +25,11 @@ class CPU
         
         uint16_t sp() const { return sp_; }
         uint16_t pc() const { return pc_; }
+
+        uint8_t fetch8();
+        uint16_t fetch16();
+
+        void step();
     
     private:
         // 8bit registers
