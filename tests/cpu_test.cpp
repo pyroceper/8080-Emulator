@@ -20,7 +20,7 @@ TEST(CPUTest, InitialStateIsZero)
 
 }
 
-TEST(CPUTest, Fetch8Bytes)
+TEST(CPUTest, Fetch8Bits)
 {
     i8080::Bus bus;
     i8080::CPU cpu(bus);
@@ -33,7 +33,7 @@ TEST(CPUTest, Fetch8Bytes)
     EXPECT_EQ(bus.read(cpu.pc()), 0x42);
 }
 
-TEST(CPUTest, Fetch16Bytes)
+TEST(CPUTest, Fetch16Bits)
 {
     i8080::Bus bus;
     i8080::CPU cpu(bus);
