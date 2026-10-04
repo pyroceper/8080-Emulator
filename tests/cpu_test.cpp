@@ -434,3 +434,53 @@ TEST(CPUTest, INRAndDCROpcodes)
 
     EXPECT_EQ(bus.read(addr), 0x69);
 }
+
+TEST(CPUTest, RLCOpcode)
+{
+    i8080::Bus bus;
+    i8080::CPU cpu(bus);
+
+    // RLC - rotate A left
+    cpu.set_reg(i8080::Reg::A, 0x80); // 0x80 -> 0b10000000
+    cpu.exec_rlc();
+    EXPECT_EQ(cpu.get_reg(i8080::Reg::A), 0x01);
+    EXPECT_TRUE(cpu.carry());
+}
+
+TEST(CPUTest, RRCOpcode)
+{
+    i8080::Bus bus;
+    i8080::CPU cpu(bus);
+
+    // RLC - rotate A right
+    cpu.set_reg(i8080::Reg::A, 0x01); 
+    cpu.exec_rrc();
+    EXPECT_EQ(cpu.get_reg(i8080::Reg::A), 0x80); // 0x80 -> 0b10000000
+    EXPECT_TRUE(cpu.carry());
+}
+
+TEST(CPUTest, RALOpcode)
+{
+    i8080::Bus bus;
+    i8080::CPU cpu(bus);
+
+    // RAL - rotate A left
+    cpu.set_reg(i8080::Reg::A, 0x80); // 0x80 -> 0b10000000
+    cpu.set_c(true);
+    cpu.exec_ral();
+    EXPECT_EQ(cpu.get_reg(i8080::Reg::A), 0x01); 
+    EXPECT_TRUE(cpu.carry());
+}
+
+TEST(CPUTest, RAROpcode)
+{
+    i8080::Bus bus;
+    i8080::CPU cpu(bus);
+
+    // RAR - rotate A right
+    cpu.set_reg(i8080::Reg::A, 0x01); 
+    cpu.set_c(true);
+    cpu.exec_rar();
+    EXPECT_EQ(cpu.get_reg(i8080::Reg::A), 0x80); // 0x80 -> 0b10000000
+    EXPECT_TRUE(cpu.carry());
+}

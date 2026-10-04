@@ -74,6 +74,11 @@ void CPU::set_zsp(uint8_t result)
     flags_.p = (std::popcount(result) % 2) == 0; // parity
 }
 
+void CPU::set_c(bool carry)
+{
+    flags_.c = carry;
+}
+
 void CPU::exec_inr(uint8_t reg)
 {
     uint8_t value = get_reg(reg);
@@ -96,6 +101,48 @@ void CPU::exec_dcr(uint8_t reg)
     set_zsp(result);
 
     set_reg(reg, result);
+}
+
+void CPU::exec_rlc()
+{
+    uint8_t high_order_bit = (a() >> 7) & 0x01;
+    flags_.c = high_order_bit;
+
+    uint8_t result = (a() << 1) | high_order_bit;
+
+    set_reg(Reg::A, result);
+}
+
+void CPU::exec_rrc()
+{
+    uint8_t low_order_bit =  a() & 0x01;
+    flags_.c = low_order_bit;
+
+    uint8_t result = (a() >> 1) | (low_order_bit << 7);
+
+    set_reg(Reg::A, result);
+}
+
+void CPU::exec_ral()
+{
+    uint8_t carry_bit = flags_.c;
+    uint8_t high_order_bit = (a() >> 7) & 0x01;
+    flags_.c = high_order_bit;
+    
+    uint8_t result = (a() << 1) | carry_bit;
+
+    set_reg(Reg::A, result);
+}
+
+void CPU::exec_rar()
+{
+    uint8_t carry_bit = flags_.c;
+    uint8_t low_order_bit =  a() & 0x01;
+    flags_.c = low_order_bit;
+
+    uint8_t result = (a() >> 1) | (carry_bit << 7);
+
+    set_reg(Reg::A, result);
 }
 
 uint8_t CPU::fetch8()
@@ -210,6 +257,12 @@ void CPU::step()
         case 0x1D: exec_dcr(Reg::E); break;
         case 0x2D: exec_dcr(Reg::L); break;
         case 0x3D: exec_dcr(Reg::A); break;
+
+        // Rotate Accumulator
+        case 0x07: exec_rlc(); break; // RLC
+        case 0x0F: exec_rrc(); break; // RRC
+        case 0x17: exec_ral(); break; // RAL
+        case 0x1F: exec_rar(); break; // RAR
 
         default: {
             // MOV opcodes

@@ -39,11 +39,18 @@ class CPU
         bool zero() const { return flags_.z; }
         bool sign() const { return flags_.s; }
         bool parity() const { return flags_.p; }
+        bool carry() const { return flags_.c; }
         
         void set_zsp(uint8_t result);
+        void set_c(bool carry);
 
         void exec_inr(uint8_t reg);
         void exec_dcr(uint8_t reg);
+
+        void exec_rlc();
+        void exec_rrc();
+        void exec_ral();
+        void exec_rar();
 
         uint8_t fetch8();
         uint16_t fetch16();
