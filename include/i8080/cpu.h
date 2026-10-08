@@ -44,6 +44,14 @@ class CPU
         void set_zsp(uint8_t result);
         void set_c(bool carry);
 
+        void exec_shld();
+        void exec_lhld();
+
+        void exec_sta();
+        void exec_lda();
+
+        void exec_xchg();
+
         void exec_inr(uint8_t reg);
         void exec_dcr(uint8_t reg);
 

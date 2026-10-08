@@ -79,6 +79,40 @@ void CPU::set_c(bool carry)
     flags_.c = carry;
 }
 
+void CPU::exec_shld() // SHLD a16
+{
+    const uint16_t addr = fetch16();
+    bus_.write(addr, l());
+    bus_.write(addr + 1, h());
+}
+
+void CPU::exec_lhld() // LHLD a16
+{
+    const uint16_t addr = fetch16();
+
+    set_reg(Reg::L, bus_.read(addr));
+    set_reg(Reg::H, bus_.read(addr + 1));
+}
+
+void CPU::exec_sta() // STA a16
+{
+    const uint16_t addr = fetch16();
+    bus_.write(addr, a());
+}
+
+void CPU::exec_lda() // LDA a16
+{
+    const uint16_t addr = fetch16();
+    set_reg(Reg::A, bus_.read(addr));
+}
+
+void CPU::exec_xchg()
+{
+    uint16_t temp = get_rp(RegPair::DE);
+    set_rp(RegPair::DE, get_rp(RegPair::HL));
+    set_rp(RegPair::HL, temp);
+}
+
 void CPU::exec_inr(uint8_t reg)
 {
     uint8_t value = get_reg(reg);
@@ -185,29 +219,14 @@ void CPU::step()
         case 0x1A: set_reg(Reg::A, bus_.read(get_rp(RegPair::DE))); break; // LDAX D
 
         // SHLD - store H and L direct
-        case 0x22: { // SHLD a16
-            const uint16_t addr = fetch16();
-            bus_.write(addr, l());
-            bus_.write(addr + 1, h());
-        } break;
+        case 0x22: exec_shld(); break;
         // LHLD - load H and L from address
-        case 0x2A: { // LHLD a16
-            const uint16_t addr = fetch16();
-
-            set_reg(Reg::L, bus_.read(addr));
-            set_reg(Reg::H, bus_.read(addr + 1));
-        } break;
+        case 0x2A: exec_lhld(); break;
 
         // STA - store A in memory
-        case 0x32: { // STA a16
-            const uint16_t addr = fetch16();
-            bus_.write(addr, a());
-        } break;
+        case 0x32: exec_sta(); break;
         // LDA - load A from memory
-        case 0x3A: { // LDA a16
-            const uint16_t addr = fetch16();
-            set_reg(Reg::A, bus_.read(addr));
-        } break;
+        case 0x3A: exec_lda(); break;
 
         // MVI - move immediate into register or memory
         case 0x06: set_reg(Reg::B, fetch8()); break; // MVI B,d8
@@ -220,11 +239,7 @@ void CPU::step()
         case 0x3E: set_reg(Reg::A, fetch8()); break; // MVI A,d8
 
         // XCHG - exchange DE and HL
-        case 0xEB: {
-            uint16_t temp = get_rp(RegPair::DE);
-            set_rp(RegPair::DE, get_rp(RegPair::HL));
-            set_rp(RegPair::HL, temp);
-        } break;
+        case 0xEB: exec_xchg(); break;
 
         // INX - increment register pair
         case 0x03: set_rp(RegPair::BC, get_rp(RegPair::BC) + 1); break;
