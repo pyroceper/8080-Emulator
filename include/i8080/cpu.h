@@ -40,9 +40,11 @@ class CPU
         bool sign() const { return flags_.s; }
         bool parity() const { return flags_.p; }
         bool carry() const { return flags_.c; }
+        bool aux() const { return flags_.ac; }
         
         void set_zsp(uint8_t result);
         void set_c(bool carry);
+        void set_aux_c(bool aux_c);
 
         void exec_shld();
         void exec_lhld();
@@ -60,6 +62,8 @@ class CPU
         void exec_ral();
         void exec_rar();
 
+        void exec_daa();
+        
         uint8_t fetch8();
         uint16_t fetch16();
 

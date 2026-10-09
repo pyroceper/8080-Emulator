@@ -79,6 +79,11 @@ void CPU::set_c(bool carry)
     flags_.c = carry;
 }
 
+void CPU::set_aux_c(bool aux_c)
+{
+    flags_.ac = aux_c;
+}
+
 void CPU::exec_shld() // SHLD a16
 {
     const uint16_t addr = fetch16();
@@ -177,6 +182,33 @@ void CPU::exec_rar()
     uint8_t result = (a() >> 1) | (carry_bit << 7);
 
     set_reg(Reg::A, result);
+}
+
+void CPU::exec_daa()
+{
+    const uint8_t old_reg_A = get_reg(Reg::A);
+    const bool old_c = flags_.c;
+    const bool old_ac = flags_.ac;
+
+    uint16_t result = old_reg_A;
+
+    if ((old_reg_A & 0x0F) > 0x09 || old_ac) { // lsb for bcd
+        result += 0x06;
+    }
+    if (old_reg_A > 0x99 || old_c) { // msb for bcd
+        result += 0x60;
+    }
+
+
+    // aux carry from the low digit adjustment
+    flags_.ac = ((old_reg_A ^ result) & 0x10) != 0;
+
+    // preserve an incoming carry or detect a new one
+    flags_.c = old_c || (result > 0xFF);
+
+    uint8_t final_a = static_cast<uint8_t>(result);
+    set_reg(Reg::A, final_a);
+    set_zsp(final_a);
 }
 
 uint8_t CPU::fetch8()
@@ -278,6 +310,16 @@ void CPU::step()
         case 0x0F: exec_rrc(); break; // RRC
         case 0x17: exec_ral(); break; // RAL
         case 0x1F: exec_rar(); break; // RAR
+
+        // BCD instruction
+        case 0x27: exec_daa(); break; // DAA - decimal adjust accumulator
+
+        case 0x2F: set_reg(Reg::A, static_cast<uint8_t>(~a())); break; // CMA
+
+        // Carry flag instructions
+        case 0x37: flags_.c = true; break; // STC - set carry flag
+        case 0x3F: flags_.c = !flags_.c;  break; // CMC - Compliment carry flag
+
 
         default: {
             // MOV opcodes

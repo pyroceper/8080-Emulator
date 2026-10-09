@@ -484,3 +484,85 @@ TEST(CPUTest, RAROpcode)
     EXPECT_EQ(cpu.get_reg(i8080::Reg::A), 0x80); // 0x80 -> 0b10000000
     EXPECT_TRUE(cpu.carry());
 }
+
+TEST(CPUTest, DAAOpcode)
+{
+    i8080::Bus bus;
+    i8080::CPU cpu(bus);
+
+    // A = 0x12
+    // ac = 1; c = 0; expected A = 0x18; expected c = 0
+    cpu.set_reg(i8080::Reg::A, 0x12);
+    cpu.set_aux_c(1);
+    cpu.set_c(0);
+
+    bus.write(0x0000, 0x27); // DAA
+
+    cpu.step(); // execute
+
+    EXPECT_EQ(cpu.a(), 0x18);
+    EXPECT_EQ(cpu.carry(), 0);
+
+    // A = 0xCE
+    // ac = 0; c = 0; expected A = 0x34; expected c = 1
+    cpu.set_reg(i8080::Reg::A, 0xCE);
+    cpu.set_aux_c(0);
+    cpu.set_c(0);
+
+    bus.write(0x0001, 0x27); // DAA
+
+    cpu.step(); // execute
+
+    EXPECT_EQ(cpu.a(), 0x34);
+    EXPECT_EQ(cpu.carry(), 1);
+}
+
+TEST(CPUTest, CMAOpcode)
+{
+    i8080::Bus bus;
+    i8080::CPU cpu(bus);
+
+    // A = 0x00; expected A = 0xFF
+    cpu.set_reg(i8080::Reg::A, 0x00);
+
+    bus.write(0x0000, 0x2F); // CMA
+
+    cpu.step(); // execute
+
+    EXPECT_EQ(cpu.a(), 0xFF);
+
+    // A = 0xFF; expected A = 0x00
+    bus.write(0x0001, 0x2F); // CMA
+
+    cpu.step(); // execute
+
+    EXPECT_EQ(cpu.a(), 0x00);
+
+    // A = 0xA5; expected A = 0x5A
+    cpu.set_reg(i8080::Reg::A, 0xA5);
+
+    bus.write(0x0002, 0x2F); // CMA
+
+    cpu.step(); // execute
+
+    EXPECT_EQ(cpu.a(), 0x5A);
+}
+
+TEST(CPUTest, STCAndCMC)
+{
+    i8080::Bus bus;
+    i8080::CPU cpu(bus);
+    
+    bus.write(0x0000, 0x37); // STC
+    bus.write(0x0001, 0x3F); // CMC
+    bus.write(0x0002, 0x3F); // CMC
+
+    cpu.step(); // execute
+    EXPECT_TRUE(cpu.carry());
+
+    cpu.step(); // execute
+    EXPECT_FALSE(cpu.carry());
+
+    cpu.step(); // execute
+    EXPECT_TRUE(cpu.carry());
+}
