@@ -211,6 +211,17 @@ void CPU::exec_daa()
     set_zsp(final_a);
 }
 
+void CPU::exec_dad(uint8_t rp)
+{
+    uint16_t reg_pair = get_rp(rp);
+
+    uint32_t result = static_cast<uint32_t>(get_rp(RegPair::HL)) + reg_pair;
+
+    flags_.c = (result & 0x10000) != 0;
+
+    set_rp(RegPair::HL, static_cast<uint16_t>(result));
+}
+
 uint8_t CPU::fetch8()
 {
     return bus_.read(pc_++);
@@ -320,6 +331,11 @@ void CPU::step()
         case 0x37: flags_.c = true; break; // STC - set carry flag
         case 0x3F: flags_.c = !flags_.c;  break; // CMC - Compliment carry flag
 
+        // DAD - Double Add - register pair is added to HL
+        case 0x09: exec_dad(RegPair::BC); break;
+        case 0x19: exec_dad(RegPair::DE); break;
+        case 0x29: exec_dad(RegPair::HL); break;
+        case 0x39: exec_dad(RegPair::SP); break;
 
         default: {
             // MOV opcodes

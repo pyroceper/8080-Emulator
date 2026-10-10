@@ -64,6 +64,8 @@ class CPU
 
         void exec_daa();
         
+        void exec_dad(uint8_t rp);
+
         uint8_t fetch8();
         uint16_t fetch16();
 

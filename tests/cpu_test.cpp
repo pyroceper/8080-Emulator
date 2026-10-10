@@ -548,7 +548,7 @@ TEST(CPUTest, CMAOpcode)
     EXPECT_EQ(cpu.a(), 0x5A);
 }
 
-TEST(CPUTest, STCAndCMC)
+TEST(CPUTest, STCAndCMCOpcodes)
 {
     i8080::Bus bus;
     i8080::CPU cpu(bus);
@@ -565,4 +565,53 @@ TEST(CPUTest, STCAndCMC)
 
     cpu.step(); // execute
     EXPECT_TRUE(cpu.carry());
+}
+
+TEST(CPUTest, DADOpcode)
+{
+    i8080::Bus bus;
+    i8080::CPU cpu(bus);
+
+    // BC = 339F; HL = A17B; BC + HL = D51A
+    cpu.set_rp(i8080::RegPair::BC, 0x339F);
+    cpu.set_rp(i8080::RegPair::HL, 0xA17B);
+
+    bus.write(0x0000, 0x09); // DAD B
+
+    cpu.step(); // execute
+
+    EXPECT_EQ(cpu.get_rp(i8080::RegPair::HL), 0xD51A);
+    EXPECT_FALSE(cpu.carry());
+
+    // DE = FF00; HL = 1000; DE + HL = 0x10F00
+    cpu.set_rp(i8080::RegPair::DE, 0xFF00);
+    cpu.set_rp(i8080::RegPair::HL, 0x1000);
+
+    bus.write(0x0001, 0x19); // DAD D
+
+    cpu.step(); // execute
+
+    EXPECT_EQ(cpu.get_rp(i8080::RegPair::HL), 0x0F00);
+    EXPECT_TRUE(cpu.carry());
+
+
+    // HL = 1234; HL + HL = 2468
+    cpu.set_rp(i8080::RegPair::HL, 0x1234);
+
+    bus.write(0x0002, 0x29); // DAD H
+
+    cpu.step(); // execute
+
+    EXPECT_EQ(cpu.get_rp(i8080::RegPair::HL), 0x2468);
+
+
+    // SP = 0100; HL = 1000; SP + HL = 1100
+    cpu.set_rp(i8080::RegPair::SP, 0x0100);
+    cpu.set_rp(i8080::RegPair::HL, 0x1000);
+
+    bus.write(0x0003, 0x39); // DAD SP
+
+    cpu.step(); // execute
+
+    EXPECT_EQ(cpu.get_rp(i8080::RegPair::HL), 0x1100);
 }
